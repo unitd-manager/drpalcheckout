@@ -18,6 +18,7 @@ import PublicRoute from "./components/PublicRoute";
 import AdminDashboard from "./pages/AdminDashBoard";
 import useAuthStore from "./constants/useAuthStore";
 import EnrollOnlineShow from "./pages/EnrollOnlineShow";
+import SixtyDaysHealthReset from "./pages/SixtyDaysHealthReset";
 
 const App = () => {
   const { role, isAuthenticated } = useAuthStore();
@@ -52,6 +53,14 @@ const App = () => {
           element={
             <PublicRoute>
               <EnrollOnlineShow />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/sixty-days-health-reset"
+          element={
+            <PublicRoute>
+              <SixtyDaysHealthReset />
             </PublicRoute>
           }
         />
@@ -123,9 +132,9 @@ const App = () => {
         <Route
           path="/allplans"
           element={
-            <ProtectedRoute>
+            <PublicRoute>
               <AllPlans />
-            </ProtectedRoute>
+            </PublicRoute>
           }
         />
         <Route
