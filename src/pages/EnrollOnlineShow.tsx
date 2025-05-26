@@ -29,6 +29,7 @@ const EnrollOnlineShow = () => {
 
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
   const [errors, setErrors] = useState({ name: "", email: "", phone: "" });
+  const [isLoading, setLoading] = useState(false); // NEW
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,6 +63,7 @@ const EnrollOnlineShow = () => {
   };
   const handlePayment = () => {
     if (!validate()) return;
+    setLoading(true); // start spinner
 
     const options = {
       key: "rzp_test_Z95Rb6SwKhyUn7",
@@ -105,6 +107,8 @@ const EnrollOnlineShow = () => {
             duration: 6000,
             isClosable: true,
           });
+        } finally {
+          setLoading(false);
         }
       },
 
@@ -247,6 +251,7 @@ const EnrollOnlineShow = () => {
               mt={5}
               size="lg"
               onClick={handlePayment}
+              isLoading={isLoading}
             >
               Pay ₹199 & Reserve Seat
             </Button>
