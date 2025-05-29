@@ -66,7 +66,7 @@ const EnrollOnlineShow = () => {
     setLoading(true); // start spinner
 
     const options = {
-      key: "rzp_test_Z95Rb6SwKhyUn7",
+      key: "rzp_live_RD6YGwqBWVIWNr",
       amount: 199 * 100,
       currency: "INR",
       name: "DRPAL NewMe - Transform Your Health",
