@@ -110,7 +110,7 @@ const SixtyDaysHealthReset = () => {
     name: "",
     email: "",
     phone: "",
-    location: "",
+    location: "OUT",
   });
   const [errors, setErrors] = useState({
     name: "",
@@ -121,7 +121,7 @@ const SixtyDaysHealthReset = () => {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const resetForm = () => {
-    setFormData({ name: "", email: "", phone: "", location: "" });
+    setFormData({ name: "", email: "", phone: "", location: "OUT" });
     setErrors({ name: "", email: "", phone: "", location: "" });
   };
 
@@ -182,7 +182,8 @@ const SixtyDaysHealthReset = () => {
     setLoading(true);
 
     const options = {
-      key: "rzp_live_RD6YGwqBWVIWNr",
+      //key: "rzp_live_RD6YGwqBWVIWNr"
+      key: "rzp_test_yE3jJN90A3ObCp",
       amount: PRICE_INR * 100,
       currency: "INR",
       name: "DRPAL NewMe - Transform Your Health",
@@ -198,7 +199,7 @@ const SixtyDaysHealthReset = () => {
               phone: formData.phone,
               datetime: moment().format("DD-MM-YYYY HH:mm"),
               payment_id: paymentId,
-              type: formData.location,
+              location: formData.location,
             }
           );
           toast({
@@ -245,7 +246,7 @@ const SixtyDaysHealthReset = () => {
           phone: formData.phone,
           datetime: moment().format("DD-MM-YYYY HH:mm"),
           payment_id: paymentId,
-          type: formData.location,
+          location: formData.location,
         }
       );
       toast({
@@ -393,7 +394,7 @@ const SixtyDaysHealthReset = () => {
               <FormControl isInvalid={!!errors.phone}>
                 <FormLabel>Phone Number</FormLabel>
                 <Input
-                  type="tel"
+                  type="number"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, phone: e.target.value }))
