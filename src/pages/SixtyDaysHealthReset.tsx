@@ -18,6 +18,7 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  Select,
   Stack,
   Text,
   useDisclosure,
@@ -26,7 +27,6 @@ import {
 import { useState } from "react";
 import {
   IoCalendarOutline,
-  IoGiftOutline,
   IoLocationOutline,
   IoTimeOutline,
 } from "react-icons/io5";
@@ -40,8 +40,11 @@ import { loadStripe } from "@stripe/stripe-js";
 import moment from "moment";
 import api from "@/constants/api";
 import drpalimg from "../assets/dr-pal-2.png";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
+import "./style.css";
+import { useNavigate } from "react-router-dom";
 
-/* ---------- Stripe ---------- */
 const stripePromise = loadStripe(
   "pk_live_51Qcw05A9DMbPqakd8tnp2cIKFDiiTc9KbiTDi1O1YI5gb6dlV4ierR59ZlxCX19Z04kwz3GVuQ5v1yBEshkyzGNR00Uj0ISiYa"
 );
@@ -102,6 +105,8 @@ const CheckoutForm: React.FC<CheckoutProps> = ({ onSuccess }) => {
 };
 
 const SixtyDaysHealthReset = () => {
+  const navigate = useNavigate();
+
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [loading, setLoading] = useState(false);
@@ -111,22 +116,30 @@ const SixtyDaysHealthReset = () => {
     email: "",
     phone: "",
     location: "OUT",
+    how_known: "",
   });
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     phone: "",
     location: "",
+    how_known: "",
   });
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const resetForm = () => {
-    setFormData({ name: "", email: "", phone: "", location: "OUT" });
-    setErrors({ name: "", email: "", phone: "", location: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      location: "OUT",
+      how_known: "",
+    });
+    setErrors({ name: "", email: "", phone: "", location: "", how_known: "" });
   };
 
   const validate = () => {
-    const { name, email, phone, location } = formData;
+    const { name, email, phone, location, how_known } = formData;
     const newErrors = {
       name: name.trim() === "" ? "Name is required" : "",
       email:
@@ -137,13 +150,14 @@ const SixtyDaysHealthReset = () => {
           : "",
       phone:
         phone.trim() === ""
-          ? "Phone number is required"
-          : !/^\d{10}$/.test(phone.replace(/\D/g, ""))
+          ? "Phone is required"
+          : !/^\+?[0-9]{10,15}$/.test(phone)
           ? "Invalid phone number"
           : "",
       location: !["IN", "OUT"].includes(location)
         ? "Please select your location"
         : "",
+      how_known: how_known.trim() === "" ? "This field is required" : "",
     };
     setErrors(newErrors);
     return Object.values(newErrors).every((e) => !e);
@@ -182,12 +196,11 @@ const SixtyDaysHealthReset = () => {
     setLoading(true);
 
     const options = {
-      //key: "rzp_live_RD6YGwqBWVIWNr"
-      key: "rzp_test_yE3jJN90A3ObCp",
+      key: "rzp_live_RD6YGwqBWVIWNr",
       amount: PRICE_INR * 100,
       currency: "INR",
-      name: "DRPAL NewMe - Transform Your Health",
-      description: "Event Ticket - Transform Your Health",
+      name: "DRPAL NewMe - 60 days Health Reset Webinar",
+      description: "Event Ticket - 60 days Health Reset",
       handler: async (response: any) => {
         const paymentId = response.razorpay_payment_id;
         try {
@@ -200,8 +213,10 @@ const SixtyDaysHealthReset = () => {
               datetime: moment().format("DD-MM-YYYY HH:mm"),
               payment_id: paymentId,
               location: formData.location,
+              how_known: formData.how_known,
             }
           );
+
           toast({
             title: data.status
               ? "Payment & Registration Successful"
@@ -211,7 +226,11 @@ const SixtyDaysHealthReset = () => {
             duration: 6000,
             isClosable: true,
           });
-          if (data.status) resetForm();
+
+          if (data.status) {
+            resetForm();
+            navigate(`/thank-you?loc=${formData.location}`);
+          }
         } catch (err: any) {
           toast({
             title: "Payment saved, but server error",
@@ -224,6 +243,19 @@ const SixtyDaysHealthReset = () => {
           setLoading(false);
         }
       },
+      modal: {
+        ondismiss: () => {
+          toast({
+            title: "Payment Cancelled",
+            description:
+              "You closed the payment popup without completing payment.",
+            status: "info",
+            duration: 5000,
+            isClosable: true,
+          });
+          setLoading(false);
+        },
+      },
       prefill: {
         name: formData.name,
         email: formData.email,
@@ -233,6 +265,20 @@ const SixtyDaysHealthReset = () => {
     };
 
     const razorpay = new (window as any).Razorpay(options);
+
+    razorpay.on("payment.failed", function (response: any) {
+      toast({
+        title: "Payment Failed",
+        description:
+          response.error?.description ||
+          "Something went wrong. Please try again.",
+        status: "error",
+        duration: 6000,
+        isClosable: true,
+      });
+      setLoading(false);
+    });
+
     razorpay.open();
   };
 
@@ -247,6 +293,7 @@ const SixtyDaysHealthReset = () => {
           datetime: moment().format("DD-MM-YYYY HH:mm"),
           payment_id: paymentId,
           location: formData.location,
+          how_known: formData.how_known,
         }
       );
       toast({
@@ -259,6 +306,7 @@ const SixtyDaysHealthReset = () => {
         isClosable: true,
       });
       if (data.status) resetForm();
+      navigate(`/thank-you?loc=${formData.location}`);
     } catch (err: any) {
       toast({
         title: "Payment saved, but server error",
@@ -322,13 +370,6 @@ const SixtyDaysHealthReset = () => {
               objectFit="contain"
             />
             <Stack spacing={4}>
-              <HStack align="start">
-                <IoGiftOutline size={24} />
-                <Text fontSize="sm" color="gray.700">
-                  Bonus: <strong>FREE Gut Reset PDF</strong> to kick-start
-                  better digestion, energy & fat loss.
-                </Text>
-              </HStack>
               <Box
                 border="1px"
                 borderColor="gray.200"
@@ -367,7 +408,6 @@ const SixtyDaysHealthReset = () => {
                   </Text>
                 </HStack>
               </HStack>
-
               <FormControl isInvalid={!!errors.name}>
                 <FormLabel>Name</FormLabel>
                 <Input
@@ -392,13 +432,19 @@ const SixtyDaysHealthReset = () => {
               </FormControl>
 
               <FormControl isInvalid={!!errors.phone}>
-                <FormLabel>Phone Number</FormLabel>
-                <Input
-                  type="number"
+                <FormLabel>Phone Number (Whatsapp Number)</FormLabel>
+                <PhoneInput
+                  defaultCountry="in"
+                  disableDialCodeAndPrefix
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, phone: e.target.value }))
-                  }
+                  onChange={(value) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      phone: value,
+                    }));
+                  }}
+                  style={{ width: "100%" }}
+                  className="chakra-input"
                 />
                 <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
@@ -428,6 +474,28 @@ const SixtyDaysHealthReset = () => {
                   </Button>
                 </HStack>
                 <FormErrorMessage>{errors.location}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={!!errors.how_known}>
+                <FormLabel>How did you hear about us?</FormLabel>
+                <Select
+                  placeholder="Select an option"
+                  value={formData.how_known}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      how_known: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="Instagram">Instagram</option>
+                  <option value="Google ads">Google Ads</option>
+                  <option value="Friends/Family">Friends / Family</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="Youtube">YouTube</option>
+                  <option value="Linked in">LinkedIn</option>
+                </Select>
+                <FormErrorMessage>{errors.how_known}</FormErrorMessage>
               </FormControl>
 
               <Button

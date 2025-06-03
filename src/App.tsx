@@ -19,6 +19,7 @@ import AdminDashboard from "./pages/AdminDashBoard";
 import useAuthStore from "./constants/useAuthStore";
 import EnrollOnlineShow from "./pages/EnrollOnlineShow";
 import SixtyDaysHealthReset from "./pages/SixtyDaysHealthReset";
+import ThankYouPage from "./pages/ThankYouPage";
 
 const App = () => {
   const { role, isAuthenticated } = useAuthStore();
@@ -48,22 +49,15 @@ const App = () => {
           }
         />
 
-        <Route
-          path="/india-show"
-          element={
-            <PublicRoute>
-              <EnrollOnlineShow />
-            </PublicRoute>
-          }
-        />
+        <Route path="/india-show" element={<EnrollOnlineShow />} />
         <Route
           path="/sixty-days-health-reset"
-          element={
-            <PublicRoute>
-              <SixtyDaysHealthReset />
-            </PublicRoute>
-          }
+          element={<SixtyDaysHealthReset />}
         />
+        <Route
+          path="/thank-you"
+          element={<ThankYouPage></ThankYouPage>}
+        ></Route>
         {/* PUBLIC AUTH ROUTES ─────────────────────────── */}
         <Route
           path="/login"
